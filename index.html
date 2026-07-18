@@ -1,0 +1,1137 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#111827" />
+  <title>Taxi Radio | Base de Taxis</title>
+  <style>
+    :root{
+      --bg:#0f172a;
+      --panel:#111827;
+      --panel-2:#1f2937;
+      --line:#334155;
+      --text:#f8fafc;
+      --muted:#94a3b8;
+      --yellow:#facc15;
+      --yellow-2:#eab308;
+      --green:#22c55e;
+      --red:#ef4444;
+      --blue:#3b82f6;
+      --orange:#f97316;
+      --shadow:0 18px 45px rgba(0,0,0,.35);
+      --radius:22px;
+    }
+
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(250,204,21,.13), transparent 28%),
+        linear-gradient(135deg,#020617,#0f172a 55%,#111827);
+      min-height:100vh;
+    }
+
+    button,input,select,textarea{font:inherit}
+    button{cursor:pointer}
+    .hidden{display:none!important}
+
+    .app-shell{
+      display:grid;
+      grid-template-columns:280px 1fr;
+      min-height:100vh;
+    }
+
+    .sidebar{
+      background:rgba(2,6,23,.88);
+      border-right:1px solid rgba(148,163,184,.15);
+      padding:24px 18px;
+      position:sticky;
+      top:0;
+      height:100vh;
+      backdrop-filter:blur(18px);
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      margin-bottom:24px;
+    }
+
+    .brand-logo{
+      width:48px;
+      height:48px;
+      border-radius:16px;
+      display:grid;
+      place-items:center;
+      background:linear-gradient(135deg,var(--yellow),var(--yellow-2));
+      color:#111827;
+      font-size:25px;
+      box-shadow:0 10px 25px rgba(250,204,21,.25);
+    }
+
+    .brand h1{
+      font-size:18px;
+      margin:0;
+      letter-spacing:.3px;
+    }
+
+    .brand p{
+      color:var(--muted);
+      margin:3px 0 0;
+      font-size:12px;
+    }
+
+    .profile{
+      background:linear-gradient(180deg,rgba(31,41,55,.92),rgba(15,23,42,.9));
+      border:1px solid rgba(148,163,184,.12);
+      padding:14px;
+      border-radius:18px;
+      margin-bottom:18px;
+    }
+
+    .profile strong{display:block}
+    .profile small{color:var(--muted)}
+    .profile-row{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+
+    .avatar{
+      width:42px;height:42px;border-radius:50%;
+      display:grid;place-items:center;
+      background:#1e293b;
+      border:2px solid var(--yellow);
+      font-weight:800;
+    }
+
+    .nav{
+      display:grid;
+      gap:8px;
+      margin-top:12px;
+    }
+
+    .nav button{
+      border:0;
+      background:transparent;
+      color:var(--muted);
+      padding:12px 14px;
+      border-radius:14px;
+      text-align:left;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      transition:.2s ease;
+    }
+
+    .nav button:hover,.nav button.active{
+      background:rgba(250,204,21,.12);
+      color:var(--yellow);
+      transform:translateX(2px);
+    }
+
+    .sidebar-footer{
+      position:absolute;
+      left:18px;right:18px;bottom:18px;
+      color:var(--muted);
+      font-size:12px;
+    }
+
+    .main{
+      padding:24px;
+      max-width:1550px;
+      width:100%;
+      margin:auto;
+    }
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:18px;
+      margin-bottom:22px;
+    }
+
+    .topbar h2{margin:0;font-size:26px}
+    .topbar p{margin:5px 0 0;color:var(--muted)}
+
+    .connection{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      background:rgba(34,197,94,.12);
+      color:#86efac;
+      border:1px solid rgba(34,197,94,.25);
+      padding:9px 12px;
+      border-radius:999px;
+      font-size:13px;
+    }
+
+    .dot{
+      width:9px;height:9px;border-radius:50%;background:currentColor;
+      box-shadow:0 0 0 4px rgba(34,197,94,.12);
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(12,1fr);
+      gap:18px;
+    }
+
+    .card{
+      background:linear-gradient(180deg,rgba(17,24,39,.92),rgba(15,23,42,.94));
+      border:1px solid rgba(148,163,184,.13);
+      border-radius:var(--radius);
+      padding:18px;
+      box-shadow:var(--shadow);
+    }
+
+    .stats{grid-column:span 12;display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+    .stat{
+      background:rgba(31,41,55,.62);
+      border:1px solid rgba(148,163,184,.1);
+      border-radius:18px;
+      padding:16px;
+    }
+    .stat span{color:var(--muted);font-size:13px}
+    .stat strong{display:block;font-size:28px;margin-top:6px}
+
+    .dispatch{grid-column:span 7}
+    .radio{grid-column:span 5}
+    .fleet{grid-column:span 8}
+    .activity{grid-column:span 4}
+
+    .section-title{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      margin-bottom:14px;
+    }
+    .section-title h3{margin:0;font-size:17px}
+    .section-title small{color:var(--muted)}
+
+    .form-grid{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:12px;
+    }
+    .form-group{display:grid;gap:7px}
+    .form-group.full{grid-column:1/-1}
+    label{font-size:12px;color:var(--muted)}
+    input,select,textarea{
+      width:100%;
+      border:1px solid var(--line);
+      background:#0f172a;
+      color:var(--text);
+      border-radius:13px;
+      padding:12px 13px;
+      outline:none;
+    }
+    input:focus,select:focus,textarea:focus{border-color:var(--yellow)}
+    textarea{resize:vertical;min-height:78px}
+
+    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+    .btn{
+      border:0;
+      border-radius:13px;
+      padding:11px 15px;
+      font-weight:700;
+      transition:.2s ease;
+    }
+    .btn:hover{transform:translateY(-1px)}
+    .btn-primary{background:var(--yellow);color:#111827}
+    .btn-secondary{background:#1e293b;color:var(--text);border:1px solid var(--line)}
+    .btn-danger{background:rgba(239,68,68,.16);color:#fca5a5;border:1px solid rgba(239,68,68,.28)}
+
+    .radio-panel{text-align:center}
+    .channel-select{display:flex;gap:8px;margin-bottom:16px}
+    .channel-select select{flex:1}
+
+    .ptt{
+      width:190px;
+      aspect-ratio:1;
+      border-radius:50%;
+      border:10px solid rgba(250,204,21,.16);
+      background:radial-gradient(circle at 35% 30%,#fde047,var(--yellow-2));
+      color:#111827;
+      font-weight:900;
+      font-size:18px;
+      box-shadow:0 18px 50px rgba(250,204,21,.28),inset 0 0 0 3px rgba(255,255,255,.2);
+      user-select:none;
+      touch-action:none;
+      transition:.12s ease;
+    }
+    .ptt:active,.ptt.talking{
+      transform:scale(.96);
+      box-shadow:0 8px 28px rgba(250,204,21,.36),0 0 0 12px rgba(239,68,68,.12);
+      background:linear-gradient(135deg,#fb7185,#ef4444);
+      color:white;
+      border-color:rgba(239,68,68,.2);
+    }
+
+    .radio-status{margin-top:14px;color:var(--muted);min-height:22px}
+    .wave{
+      display:flex;justify-content:center;align-items:end;gap:4px;height:30px;margin-top:10px
+    }
+    .wave span{
+      width:5px;height:8px;border-radius:10px;background:var(--yellow);animation:none
+    }
+    .wave.active span{animation:wave .65s infinite alternate}
+    .wave span:nth-child(2){animation-delay:.1s}.wave span:nth-child(3){animation-delay:.2s}
+    .wave span:nth-child(4){animation-delay:.3s}.wave span:nth-child(5){animation-delay:.4s}
+    @keyframes wave{to{height:28px}}
+
+    .fleet-table{width:100%;border-collapse:collapse}
+    .fleet-table th,.fleet-table td{
+      text-align:left;padding:12px 9px;border-bottom:1px solid rgba(148,163,184,.1);font-size:13px
+    }
+    .fleet-table th{color:var(--muted);font-weight:600}
+    .unit{
+      display:flex;align-items:center;gap:10px
+    }
+    .taxi-icon{
+      width:36px;height:36px;border-radius:11px;display:grid;place-items:center;
+      background:rgba(250,204,21,.14);color:var(--yellow)
+    }
+
+    .badge{
+      display:inline-flex;align-items:center;gap:6px;
+      border-radius:999px;padding:5px 9px;font-size:11px;font-weight:700
+    }
+    .available{background:rgba(34,197,94,.13);color:#86efac}
+    .busy{background:rgba(249,115,22,.15);color:#fdba74}
+    .assigned{background:rgba(59,130,246,.15);color:#93c5fd}
+    .offline{background:rgba(148,163,184,.12);color:#cbd5e1}
+
+    .mini-btn{
+      border:1px solid var(--line);background:#0f172a;color:var(--text);
+      border-radius:10px;padding:7px 9px;font-size:12px
+    }
+
+    .activity-list{display:grid;gap:10px;max-height:560px;overflow:auto}
+    .activity-item{
+      padding:12px;border-radius:14px;background:rgba(31,41,55,.55);
+      border:1px solid rgba(148,163,184,.08)
+    }
+    .activity-item strong{font-size:13px}
+    .activity-item p{margin:5px 0 0;color:var(--muted);font-size:12px}
+    .activity-item time{font-size:10px;color:#64748b}
+
+    .login-overlay{
+      position:fixed;inset:0;display:grid;place-items:center;
+      background:linear-gradient(135deg,rgba(2,6,23,.97),rgba(15,23,42,.97));
+      z-index:100;
+      padding:18px;
+    }
+    .login-card{
+      width:min(440px,100%);
+      background:#111827;
+      border:1px solid rgba(148,163,184,.16);
+      border-radius:26px;padding:24px;box-shadow:var(--shadow)
+    }
+    .login-card h2{margin:0 0 6px}
+    .login-card p{color:var(--muted);margin:0 0 18px}
+    .login-card .form-group{margin-bottom:12px}
+
+    .toast{
+      position:fixed;right:22px;bottom:22px;
+      background:#111827;border:1px solid var(--line);
+      padding:13px 15px;border-radius:14px;box-shadow:var(--shadow);
+      transform:translateY(120px);opacity:0;transition:.25s;z-index:200
+    }
+    .toast.show{transform:none;opacity:1}
+
+    .mobile-nav{display:none}
+
+    @media(max-width:1100px){
+      .app-shell{grid-template-columns:1fr}
+      .sidebar{display:none}
+      .main{padding:16px 16px 90px}
+      .dispatch,.radio,.fleet,.activity{grid-column:span 12}
+      .stats{grid-template-columns:repeat(2,1fr)}
+      .mobile-nav{
+        display:grid;grid-template-columns:repeat(4,1fr);
+        position:fixed;left:12px;right:12px;bottom:12px;z-index:50;
+        background:rgba(2,6,23,.9);border:1px solid rgba(148,163,184,.16);
+        border-radius:18px;padding:8px;backdrop-filter:blur(18px)
+      }
+      .mobile-nav button{
+        border:0;background:transparent;color:var(--muted);
+        padding:9px 4px;border-radius:12px;font-size:11px
+      }
+      .mobile-nav button.active{background:rgba(250,204,21,.13);color:var(--yellow)}
+    }
+
+    @media(max-width:650px){
+      .topbar{align-items:flex-start}
+      .topbar h2{font-size:22px}
+      .connection{font-size:11px}
+      .form-grid{grid-template-columns:1fr}
+      .stats{grid-template-columns:1fr 1fr}
+      .stat strong{font-size:22px}
+      .fleet-table th:nth-child(3),.fleet-table td:nth-child(3){display:none}
+      .ptt{width:165px}
+    }
+
+
+    /* Sitio público integrado */
+    .public-site{min-height:100vh;background:#f8fafc;color:#0f172a}
+    .public-header{position:sticky;top:0;z-index:80;display:flex;align-items:center;justify-content:space-between;padding:14px clamp(18px,5vw,72px);background:rgba(255,255,255,.94);border-bottom:1px solid #e2e8f0;backdrop-filter:blur(16px)}
+    .public-brand{display:flex;align-items:center;gap:12px;font-weight:900}
+    .public-brand .brand-logo{width:44px;height:44px;margin:0}
+    .public-nav{display:flex;align-items:center;gap:18px}
+    .public-nav a{color:#334155;text-decoration:none;font-weight:700;font-size:14px}
+    .public-login{border:0;border-radius:12px;padding:10px 14px;background:#111827;color:white;font-weight:800}
+    .hero-public{min-height:620px;display:grid;grid-template-columns:1.1fr .9fr;align-items:center;gap:42px;padding:70px clamp(20px,6vw,90px);background:linear-gradient(135deg,#0f172a 0%,#111827 58%,#1e293b 100%);color:white;position:relative;overflow:hidden}
+    .hero-public:after{content:"";position:absolute;width:420px;height:420px;border-radius:50%;right:-120px;top:-90px;background:rgba(250,204,21,.16);filter:blur(3px)}
+    .hero-copy{position:relative;z-index:2}
+    .hero-chip{display:inline-flex;gap:8px;align-items:center;border:1px solid rgba(250,204,21,.35);background:rgba(250,204,21,.1);color:#fde047;border-radius:999px;padding:8px 12px;font-weight:800;font-size:13px}
+    .hero-public h1{font-size:clamp(40px,6vw,76px);line-height:1.02;margin:20px 0 18px;max-width:780px}
+    .hero-public h1 span{color:#facc15}
+    .hero-public p{font-size:18px;line-height:1.7;color:#cbd5e1;max-width:680px}
+    .hero-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px}
+    .hero-actions a,.hero-actions button{border:0;border-radius:14px;padding:14px 18px;font-weight:900;text-decoration:none}
+    .hero-primary{background:#facc15;color:#111827}
+    .hero-secondary{background:transparent;color:white;border:1px solid #475569!important}
+    .hero-visual{position:relative;z-index:2;background:linear-gradient(180deg,#fde047,#eab308);border-radius:34px;padding:26px;box-shadow:0 30px 80px rgba(0,0,0,.35);color:#111827;transform:rotate(2deg)}
+    .taxi-window{height:300px;border-radius:24px;background:linear-gradient(180deg,#dbeafe,#93c5fd 60%,#334155 61%);display:grid;place-items:center;font-size:120px;overflow:hidden}
+    .hero-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px}
+    .hero-metric{background:rgba(255,255,255,.65);border-radius:16px;padding:12px;text-align:center}
+    .hero-metric strong{display:block;font-size:20px}
+    .public-section{padding:70px clamp(20px,6vw,90px)}
+    .section-head{text-align:center;max-width:760px;margin:0 auto 34px}
+    .section-head h2{font-size:clamp(30px,4vw,46px);margin:0 0 12px}
+    .section-head p{color:#64748b;line-height:1.7}
+    .service-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+    .service-card{background:white;border:1px solid #e2e8f0;border-radius:22px;padding:24px;box-shadow:0 15px 40px rgba(15,23,42,.08)}
+    .service-card .icon{font-size:34px}.service-card h3{margin:14px 0 8px}.service-card p{color:#64748b;line-height:1.6}
+    .booking-wrap{display:grid;grid-template-columns:.8fr 1.2fr;gap:28px;align-items:stretch;background:#0f172a;color:white;border-radius:32px;padding:clamp(22px,4vw,42px);box-shadow:0 25px 70px rgba(15,23,42,.25)}
+    .booking-info h2{font-size:38px;margin:0 0 14px}.booking-info p{color:#cbd5e1;line-height:1.7}.booking-points{display:grid;gap:12px;margin-top:24px}.booking-point{display:flex;gap:10px;align-items:center}.booking-point span{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:#facc15;color:#111827;font-weight:900}
+    .booking-form{background:white;color:#0f172a;border-radius:24px;padding:22px}.booking-form .form-grid{gap:12px}.booking-form input,.booking-form select,.booking-form textarea{background:#f8fafc;color:#0f172a;border-color:#cbd5e1}.booking-form label{color:#475569}.booking-form .btn-primary{width:100%;padding:14px;margin-top:10px}
+    .public-footer{padding:30px clamp(20px,6vw,90px);background:#020617;color:#94a3b8;display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
+    .internal-access{position:fixed;right:18px;bottom:18px;z-index:75;border:0;border-radius:50%;width:58px;height:58px;background:#facc15;color:#111827;font-size:22px;box-shadow:0 12px 35px rgba(0,0,0,.25)}
+    .app-shell.hidden-app{display:none}
+    .login-overlay.public-hidden{display:none}
+    .back-public{border:1px solid var(--line);background:#0f172a;color:white;border-radius:12px;padding:10px 12px;font-weight:800;margin-bottom:14px}
+    @media(max-width:900px){.hero-public,.booking-wrap{grid-template-columns:1fr}.service-cards{grid-template-columns:1fr}.hero-visual{transform:none}.public-nav a{display:none}}
+    @media(max-width:560px){.hero-public{padding-top:48px;min-height:auto}.hero-metrics{grid-template-columns:1fr}.public-header{padding:12px 16px}.public-section{padding:48px 16px}.hero-public h1{font-size:43px}}
+
+  </style>
+</head>
+
+<body>
+  <section class="public-site" id="publicSite">
+    <header class="public-header">
+      <div class="public-brand"><div class="brand-logo">🚕</div><div>Taxi Radio<br><small style="color:#64748b;font-weight:700">Servicio y comunicación</small></div></div>
+      <nav class="public-nav">
+        <a href="#inicio">Inicio</a><a href="#servicios">Servicios</a><a href="#solicitar">Solicitar taxi</a>
+        <button class="public-login" id="openInternalBtn">Acceso a la base</button>
+      </nav>
+    </header>
+
+    <section class="hero-public" id="inicio">
+      <div class="hero-copy">
+        <span class="hero-chip">● Unidades disponibles en tiempo real</span>
+        <h1>Tu taxi seguro, rápido y <span>siempre comunicado</span></h1>
+        <p>Solicita tu unidad desde esta misma página. La base recibe tus datos, asigna el taxi disponible y mantiene comunicación directa con el conductor mediante Taxi Radio.</p>
+        <div class="hero-actions"><a class="hero-primary" href="#solicitar">Solicitar taxi ahora</a><button class="hero-secondary" id="heroInternalBtn">Entrar como operador</button></div>
+      </div>
+      <div class="hero-visual">
+        <div class="taxi-window">🚕</div>
+        <div class="hero-metrics"><div class="hero-metric"><strong>15</strong><span>Unidades</span></div><div class="hero-metric"><strong>24/7</strong><span>Atención</span></div><div class="hero-metric"><strong>PTT</strong><span>Taxi Radio</span></div></div>
+      </div>
+    </section>
+
+    <section class="public-section" id="servicios">
+      <div class="section-head"><h2>Un solo sistema para clientes, base y conductores</h2><p>La solicitud del pasajero llega al panel central; el operador asigna una unidad y se comunica con ella mediante el radio integrado.</p></div>
+      <div class="service-cards">
+        <article class="service-card"><div class="icon">📍</div><h3>Solicitud en línea</h3><p>El pasajero registra origen, destino, teléfono y referencias sin descargar una aplicación.</p></article>
+        <article class="service-card"><div class="icon">🎙️</div><h3>Taxi Radio</h3><p>La central habla con todas las unidades o con un conductor específico mediante Push-to-Talk.</p></article>
+        <article class="service-card"><div class="icon">🛡️</div><h3>Control de unidades</h3><p>Estados, asignaciones, historial de servicios y comunicación de emergencia en un mismo panel.</p></article>
+      </div>
+    </section>
+
+    <section class="public-section" id="solicitar">
+      <div class="booking-wrap">
+        <div class="booking-info"><h2>Solicita tu taxi</h2><p>Completa los datos. La solicitud se enviará directamente a la base para asignar una unidad disponible.</p><div class="booking-points"><div class="booking-point"><span>1</span> Envía tu ubicación y destino</div><div class="booking-point"><span>2</span> La base selecciona una unidad</div><div class="booking-point"><span>3</span> El conductor recibe el servicio</div></div></div>
+        <form class="booking-form" id="publicBookingForm">
+
+          <div id="pendingRequests" style="display:grid;gap:10px;margin-bottom:14px"></div>
+          <div class="form-grid">
+            <div class="form-group"><label>Nombre</label><input id="publicName" required placeholder="Nombre del pasajero"></div>
+            <div class="form-group"><label>Teléfono</label><input id="publicPhone" required inputmode="tel" placeholder="10 dígitos"></div>
+            <div class="form-group full"><label>Origen</label><input id="publicOrigin" required placeholder="Dirección o referencia"></div>
+            <div class="form-group full"><label>Destino</label><input id="publicDestination" required placeholder="¿A dónde deseas ir?"></div>
+            <div class="form-group"><label>Personas</label><select id="publicPassengers"><option>1</option><option>2</option><option>3</option><option>4</option><option>5 o más</option></select></div>
+            <div class="form-group"><label>Forma de pago</label><select id="publicPayment"><option>Efectivo</option><option>Transferencia</option><option>Tarjeta al conductor</option></select></div>
+            <div class="form-group full"><label>Indicaciones</label><textarea id="publicNotes" placeholder="Color de casa, negocio, equipaje, etc."></textarea></div>
+          </div>
+          <button class="btn btn-primary" type="submit">Enviar solicitud a la base</button>
+        </form>
+      </div>
+    </section>
+    <footer class="public-footer"><strong>Taxi Radio</strong><span>Servicio local de taxis · Plataforma demostrativa</span></footer>
+    <button class="internal-access" id="floatingInternalBtn" title="Acceso interno">🎙️</button>
+  </section>
+
+  <div class="login-overlay public-hidden" id="loginOverlay">
+    <div class="login-card">
+      <button class="back-public" id="backPublicBtn">← Volver al servicio público</button>
+      <div class="brand">
+        <div class="brand-logo">🚕</div>
+        <div>
+          <h1>Taxi Radio</h1>
+          <p>Comunicación y despacho</p>
+        </div>
+      </div>
+      <h2>Ingresar al sistema</h2>
+      <p>Abre varias pestañas para simular la base y diferentes taxis.</p>
+
+      <div class="form-group">
+        <label>Tipo de usuario</label>
+        <select id="loginRole">
+          <option value="base">Central / Base</option>
+          <option value="driver">Conductor</option>
+        </select>
+      </div>
+
+      <div class="form-group" id="unitGroup">
+        <label>Unidad</label>
+        <select id="loginUnit"></select>
+      </div>
+
+      <div class="form-group">
+        <label>Nombre</label>
+        <input id="loginName" placeholder="Ej. Operador Pedro" value="Operador Central" />
+      </div>
+
+      <button class="btn btn-primary" style="width:100%" id="loginBtn">Entrar</button>
+    </div>
+  </div>
+
+  <div class="app-shell hidden-app" id="internalApp">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-logo">🚕</div>
+        <div>
+          <h1>Taxi Radio</h1>
+          <p>Base de taxis conectada</p>
+        </div>
+      </div>
+
+      <div class="profile">
+        <div class="profile-row">
+          <div class="avatar" id="avatar">BC</div>
+          <div>
+            <strong id="profileName">Base Central</strong>
+            <small id="profileRole">Administrador</small>
+          </div>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <button class="active" data-target="dashboard">🏠 Panel principal</button>
+        <button data-target="dispatchCard">📍 Asignar servicio</button>
+        <button data-target="radioCard">🎙️ Radio</button>
+        <button data-target="fleetCard">🚕 Unidades</button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div>Prototipo local</div>
+        <div>Voz entre pestañas del mismo navegador</div>
+      </div>
+    </aside>
+
+    <main class="main" id="dashboard">
+      <header class="topbar">
+        <div>
+          <h2 id="pageTitle">Panel de la Base</h2>
+          <p id="pageSubtitle">Control de unidades, servicios y comunicación.</p>
+        </div>
+        <div class="connection"><span class="dot"></span> Conectado</div>
+      </header>
+
+      <section class="grid">
+        <div class="stats">
+          <div class="stat"><span>Unidades disponibles</span><strong id="availableCount">15</strong></div>
+          <div class="stat"><span>En servicio</span><strong id="busyCount">0</strong></div>
+          <div class="stat"><span>Servicios hoy</span><strong id="serviceCount">0</strong></div>
+          <div class="stat"><span>Usuarios conectados</span><strong id="onlineCount">1</strong></div>
+        </div>
+
+        <article class="card dispatch" id="dispatchCard">
+          <div class="section-title">
+            <h3>Asignar nuevo servicio</h3>
+            <small>Envío inmediato a la unidad</small>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Unidad asignada</label>
+              <select id="serviceUnit"></select>
+            </div>
+            <div class="form-group">
+              <label>Nombre del pasajero</label>
+              <input id="passengerName" placeholder="Nombre completo" />
+            </div>
+            <div class="form-group full">
+              <label>Origen</label>
+              <input id="origin" placeholder="Dirección o punto de referencia" />
+            </div>
+            <div class="form-group full">
+              <label>Destino</label>
+              <input id="destination" placeholder="Destino del viaje" />
+            </div>
+            <div class="form-group">
+              <label>Teléfono</label>
+              <input id="phone" inputmode="tel" placeholder="10 dígitos" />
+            </div>
+            <div class="form-group">
+              <label>Tarifa estimada</label>
+              <input id="fare" inputmode="decimal" placeholder="$0.00" />
+            </div>
+            <div class="form-group full">
+              <label>Notas</label>
+              <textarea id="notes" placeholder="Indicaciones adicionales"></textarea>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button class="btn btn-primary" id="sendServiceBtn">Enviar servicio</button>
+            <button class="btn btn-secondary" id="clearServiceBtn">Limpiar</button>
+          </div>
+        </article>
+
+        <article class="card radio radio-panel" id="radioCard">
+          <div class="section-title">
+            <h3>Radio Push-to-Talk</h3>
+            <small id="radioUser">Base Central</small>
+          </div>
+
+          <div class="channel-select">
+            <select id="channelSelect">
+              <option value="general">Canal general</option>
+              <option value="emergency">Emergencias</option>
+            </select>
+          </div>
+
+          <button class="ptt" id="pttButton">MANTÉN PARA<br>HABLAR</button>
+          <div class="radio-status" id="radioStatus">Canal libre</div>
+          <div class="wave" id="wave">
+            <span></span><span></span><span></span><span></span><span></span>
+          </div>
+          <audio id="audioPlayer" controls class="hidden" style="width:100%;margin-top:12px"></audio>
+        </article>
+
+        <article class="card fleet" id="fleetCard">
+          <div class="section-title">
+            <h3>Control de unidades</h3>
+            <small>15 taxis registrados</small>
+          </div>
+          <div style="overflow:auto">
+            <table class="fleet-table">
+              <thead>
+                <tr>
+                  <th>Unidad</th>
+                  <th>Conductor</th>
+                  <th>Estado</th>
+                  <th>Canal</th>
+                  <th>Acción</th>
+                </tr>
+              </thead>
+              <tbody id="fleetBody"></tbody>
+            </table>
+          </div>
+        </article>
+
+        <article class="card activity">
+          <div class="section-title">
+            <h3>Actividad reciente</h3>
+            <button class="mini-btn" id="clearLogBtn">Limpiar</button>
+          </div>
+          <div class="activity-list" id="activityList"></div>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <nav class="mobile-nav">
+    <button class="active" data-target="dashboard">🏠<br>Inicio</button>
+    <button data-target="dispatchCard">📍<br>Servicio</button>
+    <button data-target="radioCard">🎙️<br>Radio</button>
+    <button data-target="fleetCard">🚕<br>Unidades</button>
+  </nav>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const TAXI_COUNT = 15;
+    const STORAGE_KEY = "taxiRadioState_v1";
+    const USER_KEY = "taxiRadioUser_v1";
+    const channel = "BroadcastChannel" in window ? new BroadcastChannel("taxi-radio-network") : null;
+
+    const defaultState = {
+      taxis: Array.from({length:TAXI_COUNT}, (_,i)=>({
+        id:i+1,
+        name:`Conductor ${String(i+1).padStart(2,"0")}`,
+        status:"available",
+        online:false,
+        channel:"General",
+        lastService:null
+      })),
+      services:[],
+      activity:[]
+    };
+
+    let state = loadState();
+    let currentUser = null;
+    let mediaRecorder = null;
+    let audioChunks = [];
+    let recordingStream = null;
+
+    const $ = id => document.getElementById(id);
+
+    function loadState(){
+      try{
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+        return saved && saved.taxis ? saved : structuredClone(defaultState);
+      }catch{
+        return structuredClone(defaultState);
+      }
+    }
+
+    function saveState(broadcast=true){
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      if(broadcast && channel) channel.postMessage({type:"state", state});
+      renderAll();
+    }
+
+    function toast(message){
+      const el=$("toast");
+      el.textContent=message;
+      el.classList.add("show");
+      setTimeout(()=>el.classList.remove("show"),2600);
+    }
+
+    function logActivity(title, detail){
+      state.activity.unshift({
+        title, detail,
+        time:new Date().toLocaleTimeString("es-MX",{hour:"2-digit",minute:"2-digit"})
+      });
+      state.activity=state.activity.slice(0,50);
+    }
+
+    function statusLabel(status){
+      return {
+        available:["Disponible","available"],
+        busy:["En servicio","busy"],
+        assigned:["Asignado","assigned"],
+        offline:["Fuera de línea","offline"]
+      }[status] || ["Desconocido","offline"];
+    }
+
+    function populateUnits(){
+      const opts = state.taxis.map(t=>`<option value="${t.id}">Taxi ${String(t.id).padStart(2,"0")} - ${t.name}</option>`).join("");
+      $("loginUnit").innerHTML=opts;
+      $("serviceUnit").innerHTML=opts;
+    }
+
+
+    function renderPendingRequests(){
+      const box=$("pendingRequests");
+      if(!box) return;
+      const pending=state.services.filter(s=>s.status==="pending").slice(0,6);
+      box.innerHTML=pending.length?pending.map(s=>`<div style="background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.25);padding:12px;border-radius:14px"><strong>Solicitud web: ${s.passenger}</strong><div style="color:var(--muted);font-size:12px;margin:5px 0">${s.origin} → ${s.destination} · ${s.phone}</div><button class="mini-btn" onclick="loadPublicRequest(${s.id})">Cargar para asignar</button></div>`).join(""):`<div style="color:var(--muted);font-size:12px">No hay solicitudes web pendientes.</div>`;
+    }
+
+    function renderStats(){
+      $("availableCount").textContent=state.taxis.filter(t=>t.status==="available").length;
+      $("busyCount").textContent=state.taxis.filter(t=>["busy","assigned"].includes(t.status)).length;
+      $("serviceCount").textContent=state.services.length;
+      $("onlineCount").textContent=1+state.taxis.filter(t=>t.online).length;
+    }
+
+    function renderFleet(){
+      $("fleetBody").innerHTML=state.taxis.map(t=>{
+        const [label,cls]=statusLabel(t.online ? t.status : "offline");
+        return `
+          <tr>
+            <td><div class="unit"><div class="taxi-icon">🚕</div><strong>Taxi ${String(t.id).padStart(2,"0")}</strong></div></td>
+            <td>${t.name}</td>
+            <td><span class="badge ${cls}">${label}</span></td>
+            <td>${t.channel}</td>
+            <td>
+              <button class="mini-btn" onclick="selectPrivate(${t.id})">Hablar</button>
+              <button class="mini-btn" onclick="cycleStatus(${t.id})">Estado</button>
+            </td>
+          </tr>`;
+      }).join("");
+    }
+
+    function renderActivity(){
+      const list=$("activityList");
+      if(!state.activity.length){
+        list.innerHTML=`<div class="activity-item"><strong>Sin actividad</strong><p>Los eventos aparecerán aquí.</p></div>`;
+        return;
+      }
+      list.innerHTML=state.activity.map(a=>`
+        <div class="activity-item">
+          <time>${a.time}</time>
+          <strong>${a.title}</strong>
+          <p>${a.detail}</p>
+        </div>`).join("");
+    }
+
+    function renderRoleUI(){
+      if(!currentUser) return;
+      const isBase=currentUser.role==="base";
+      $("profileName").textContent=currentUser.name;
+      $("profileRole").textContent=isBase ? "Central / Administrador" : `Conductor Taxi ${String(currentUser.unit).padStart(2,"0")}`;
+      $("avatar").textContent=currentUser.name.split(" ").map(x=>x[0]).join("").slice(0,2).toUpperCase();
+      $("pageTitle").textContent=isBase ? "Panel de la Base" : `Taxi ${String(currentUser.unit).padStart(2,"0")}`;
+      $("pageSubtitle").textContent=isBase ? "Control de unidades, servicios y comunicación." : "Comunicación, estado y servicios asignados.";
+      $("radioUser").textContent=currentUser.name;
+      $("dispatchCard").classList.toggle("hidden",!isBase);
+
+      updateChannels();
+    }
+
+    function updateChannels(){
+      const select=$("channelSelect");
+      const baseOptions = [
+        `<option value="general">Canal general</option>`,
+        `<option value="emergency">Emergencias</option>`
+      ];
+      if(currentUser?.role==="base"){
+        state.taxis.forEach(t=>baseOptions.push(`<option value="private-${t.id}">Privado Taxi ${String(t.id).padStart(2,"0")}</option>`));
+      }else if(currentUser?.role==="driver"){
+        baseOptions.push(`<option value="private-${currentUser.unit}">Privado con la base</option>`);
+      }
+      const current=select.value;
+      select.innerHTML=baseOptions.join("");
+      if([...select.options].some(o=>o.value===current)) select.value=current;
+    }
+
+    function renderAll(){
+      populateUnits();
+      renderStats();
+      renderPendingRequests();
+      renderFleet();
+      renderActivity();
+      renderRoleUI();
+    }
+
+    function login(){
+      const role=$("loginRole").value;
+      const name=$("loginName").value.trim() || (role==="base"?"Base Central":"Conductor");
+      const unit=Number($("loginUnit").value || 1);
+      currentUser={role,name,unit:role==="driver"?unit:null};
+      sessionStorage.setItem(USER_KEY,JSON.stringify(currentUser));
+
+      if(role==="driver"){
+        const taxi=state.taxis.find(t=>t.id===unit);
+        taxi.online=true;
+        taxi.name=name;
+        if(taxi.status==="offline") taxi.status="available";
+        logActivity("Unidad conectada",`Taxi ${String(unit).padStart(2,"0")} - ${name}`);
+        saveState();
+      }
+
+      $("loginOverlay").classList.add("hidden");
+      $("publicSite").classList.add("hidden");
+      $("internalApp").classList.remove("hidden-app");
+      renderAll();
+      announcePresence();
+    }
+
+    function announcePresence(){
+      if(channel && currentUser){
+        channel.postMessage({type:"presence", user:currentUser, online:true});
+      }
+    }
+
+    function selectPrivate(id){
+      $("channelSelect").value=`private-${id}`;
+      document.getElementById("radioCard").scrollIntoView({behavior:"smooth"});
+      toast(`Canal privado con Taxi ${String(id).padStart(2,"0")}`);
+    }
+
+    function cycleStatus(id){
+      const t=state.taxis.find(x=>x.id===id);
+      const order=["available","assigned","busy"];
+      const index=order.indexOf(t.status);
+      t.status=order[(index+1)%order.length];
+      t.online=true;
+      logActivity("Estado actualizado",`Taxi ${String(id).padStart(2,"0")}: ${statusLabel(t.status)[0]}`);
+      saveState();
+    }
+
+
+    function loadPublicRequest(id){
+      const s=state.services.find(x=>x.id===id);
+      if(!s) return;
+      $("passengerName").value=s.passenger||"";
+      $("origin").value=s.origin||"";
+      $("destination").value=s.destination||"";
+      $("phone").value=s.phone||"";
+      $("notes").value=s.notes||"";
+      $("sendServiceBtn").dataset.requestId=id;
+      toast("Solicitud cargada. Selecciona la unidad y envía.");
+    }
+
+    function sendService(){
+      if(currentUser?.role!=="base") return;
+      const unit=Number($("serviceUnit").value);
+      const passenger=$("passengerName").value.trim();
+      const origin=$("origin").value.trim();
+      const destination=$("destination").value.trim();
+
+      if(!passenger || !origin || !destination){
+        toast("Completa pasajero, origen y destino");
+        return;
+      }
+
+      const service={
+        id:Date.now(),
+        unit,
+        passenger,
+        origin,
+        destination,
+        phone:$("phone").value.trim(),
+        fare:$("fare").value.trim(),
+        notes:$("notes").value.trim(),
+        status:"assigned",
+        createdAt:new Date().toISOString()
+      };
+
+      const requestId=Number($("sendServiceBtn").dataset.requestId||0);
+      if(requestId){
+        const idx=state.services.findIndex(x=>x.id===requestId);
+        if(idx>=0) state.services.splice(idx,1);
+        delete $("sendServiceBtn").dataset.requestId;
+      }
+      state.services.unshift(service);
+      const taxi=state.taxis.find(t=>t.id===unit);
+      taxi.status="assigned";
+      taxi.lastService=service.id;
+      logActivity("Servicio asignado",`Taxi ${String(unit).padStart(2,"0")}: ${origin} → ${destination}`);
+      saveState();
+
+      if(channel) channel.postMessage({type:"service", service});
+      toast(`Servicio enviado al Taxi ${String(unit).padStart(2,"0")}`);
+      clearServiceForm();
+    }
+
+    function clearServiceForm(){
+      ["passengerName","origin","destination","phone","fare","notes"].forEach(id=>$(id).value="");
+    }
+
+    async function startRecording(){
+      if(mediaRecorder?.state==="recording") return;
+      try{
+        recordingStream=await navigator.mediaDevices.getUserMedia({audio:true});
+        mediaRecorder=new MediaRecorder(recordingStream);
+        audioChunks=[];
+
+        mediaRecorder.ondataavailable=e=>{ if(e.data.size) audioChunks.push(e.data); };
+        mediaRecorder.onstop=async()=>{
+          const blob=new Blob(audioChunks,{type:mediaRecorder.mimeType || "audio/webm"});
+          const base64=await blobToBase64(blob);
+          const message={
+            type:"voice",
+            sender:currentUser,
+            target:$("channelSelect").value,
+            audio:base64,
+            mime:blob.type,
+            time:Date.now()
+          };
+          if(channel) channel.postMessage(message);
+          playAudio(base64,blob.type);
+          logActivity("Transmisión enviada",`${currentUser.name} en ${channelName(message.target)}`);
+          saveState();
+          recordingStream?.getTracks().forEach(t=>t.stop());
+        };
+
+        mediaRecorder.start();
+        $("pttButton").classList.add("talking");
+        $("wave").classList.add("active");
+        $("radioStatus").textContent="Transmitiendo...";
+        if(channel) channel.postMessage({type:"talking",sender:currentUser,target:$("channelSelect").value,active:true});
+      }catch(err){
+        console.error(err);
+        toast("No se pudo acceder al micrófono. Usa HTTPS o localhost.");
+      }
+    }
+
+    function stopRecording(){
+      if(mediaRecorder?.state==="recording"){
+        mediaRecorder.stop();
+        $("pttButton").classList.remove("talking");
+        $("wave").classList.remove("active");
+        $("radioStatus").textContent="Canal libre";
+        if(channel) channel.postMessage({type:"talking",sender:currentUser,target:$("channelSelect").value,active:false});
+      }
+    }
+
+    function blobToBase64(blob){
+      return new Promise((resolve,reject)=>{
+        const reader=new FileReader();
+        reader.onload=()=>resolve(reader.result);
+        reader.onerror=reject;
+        reader.readAsDataURL(blob);
+      });
+    }
+
+    function playAudio(data,mime){
+      const audio=$("audioPlayer");
+      audio.src=data;
+      audio.classList.remove("hidden");
+      audio.play().catch(()=>{});
+    }
+
+    function channelName(value){
+      if(value==="general") return "Canal general";
+      if(value==="emergency") return "Emergencias";
+      if(value.startsWith("private-")) return `Privado Taxi ${String(value.split("-")[1]).padStart(2,"0")}`;
+      return value;
+    }
+
+    function shouldReceive(target,sender){
+      if(!currentUser) return false;
+      if(target==="general" || target==="emergency") return true;
+      if(target.startsWith("private-")){
+        const id=Number(target.split("-")[1]);
+        return currentUser.role==="base" || (currentUser.role==="driver" && currentUser.unit===id);
+      }
+      return false;
+    }
+
+    function handleMessage(event){
+      const data=event.data;
+      if(!data) return;
+
+      if(data.type==="state"){
+        state=data.state;
+        localStorage.setItem(STORAGE_KEY,JSON.stringify(state));
+        renderAll();
+      }
+
+      if(data.type==="presence" && data.user?.role==="driver"){
+        const taxi=state.taxis.find(t=>t.id===data.user.unit);
+        if(taxi){
+          taxi.online=data.online;
+          taxi.name=data.user.name;
+          if(data.online && taxi.status==="offline") taxi.status="available";
+          saveState(false);
+        }
+      }
+
+      if(data.type==="public-request" && currentUser?.role==="base"){
+        toast(`Nueva solicitud web de ${data.service.passenger}`);
+      }
+
+      if(data.type==="service" && currentUser?.role==="driver" && data.service.unit===currentUser.unit){
+        const s=data.service;
+        toast(`Nuevo servicio: ${s.origin} → ${s.destination}`);
+        alert(`NUEVO SERVICIO\n\nPasajero: ${s.passenger}\nOrigen: ${s.origin}\nDestino: ${s.destination}\nTeléfono: ${s.phone || "No indicado"}\nTarifa: ${s.fare || "No indicada"}\nNotas: ${s.notes || "Sin notas"}`);
+      }
+
+      if(data.type==="talking" && shouldReceive(data.target,data.sender)){
+        $("radioStatus").textContent=data.active ? `${data.sender.name} está hablando...` : "Canal libre";
+        $("wave").classList.toggle("active",data.active);
+      }
+
+      if(data.type==="voice" && shouldReceive(data.target,data.sender)){
+        playAudio(data.audio,data.mime);
+        $("radioStatus").textContent=`Mensaje de ${data.sender.name}`;
+        logActivity("Audio recibido",`${data.sender.name} en ${channelName(data.target)}`);
+        saveState(false);
+      }
+    }
+
+    $("loginRole").addEventListener("change",e=>{
+      const driver=e.target.value==="driver";
+      $("unitGroup").classList.toggle("hidden",!driver);
+      $("loginName").value=driver?"Conductor 01":"Operador Central";
+    });
+    $("loginBtn").addEventListener("click",login);
+    $("sendServiceBtn").addEventListener("click",sendService);
+    $("clearServiceBtn").addEventListener("click",clearServiceForm);
+    $("clearLogBtn").addEventListener("click",()=>{state.activity=[];saveState();});
+
+    const ptt=$("pttButton");
+    ["pointerdown","touchstart","mousedown"].forEach(ev=>ptt.addEventListener(ev,e=>{e.preventDefault();startRecording();},{passive:false}));
+    ["pointerup","pointercancel","touchend","mouseup","mouseleave"].forEach(ev=>ptt.addEventListener(ev,e=>{e.preventDefault();stopRecording();},{passive:false}));
+
+    document.querySelectorAll("[data-target]").forEach(btn=>{
+      btn.addEventListener("click",()=>{
+        document.querySelectorAll("[data-target]").forEach(x=>x.classList.remove("active"));
+        btn.classList.add("active");
+        document.getElementById(btn.dataset.target)?.scrollIntoView({behavior:"smooth",block:"start"});
+      });
+    });
+
+    window.selectPrivate=selectPrivate;
+    window.loadPublicRequest=loadPublicRequest;
+    window.cycleStatus=cycleStatus;
+
+    if(channel) channel.onmessage=handleMessage;
+
+    window.addEventListener("beforeunload",()=>{
+      if(currentUser?.role==="driver" && channel){
+        channel.postMessage({type:"presence",user:currentUser,online:false});
+      }
+    });
+
+
+    function openInternal(){
+      $("loginOverlay").classList.remove("public-hidden","hidden");
+      $("publicSite").classList.add("hidden");
+    }
+    function returnPublic(){
+      $("loginOverlay").classList.add("public-hidden");
+      $("publicSite").classList.remove("hidden");
+      $("internalApp").classList.add("hidden-app");
+    }
+    ["openInternalBtn","heroInternalBtn","floatingInternalBtn"].forEach(id=>$(id)?.addEventListener("click",openInternal));
+    $("backPublicBtn")?.addEventListener("click",returnPublic);
+
+    $("publicBookingForm")?.addEventListener("submit",e=>{
+      e.preventDefault();
+      const request={
+        id:Date.now(), unit:null,
+        passenger:$("publicName").value.trim(),
+        phone:$("publicPhone").value.trim(),
+        origin:$("publicOrigin").value.trim(),
+        destination:$("publicDestination").value.trim(),
+        notes:`${$("publicPassengers").value} pasajero(s) · Pago: ${$("publicPayment").value}${$("publicNotes").value.trim()?" · "+$("publicNotes").value.trim():""}`,
+        fare:"",status:"pending",createdAt:new Date().toISOString(),source:"web"
+      };
+      state.services.unshift(request);
+      logActivity("Nueva solicitud web",`${request.passenger}: ${request.origin} → ${request.destination}`);
+      saveState();
+      if(channel) channel.postMessage({type:"public-request",service:request});
+      e.target.reset();
+      toast("Solicitud enviada. La base la asignará en breve.");
+    });
+
+    const savedUser=sessionStorage.getItem(USER_KEY);
+    if(savedUser){
+      try{
+        currentUser=JSON.parse(savedUser);
+        $("loginOverlay").classList.add("hidden");
+        $("publicSite").classList.add("hidden");
+        $("internalApp").classList.remove("hidden-app");
+      }catch{}
+    }
+
+    populateUnits();
+    renderAll();
+  </script>
+</body>
+</html>
